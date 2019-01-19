@@ -196,7 +196,7 @@ public class AnalizaTweets {
     }
 
     private void cargapalabrasVacias() {
-        try (FileReader fr = new FileReader("/Users/Pam/Documents/MCI/Tesis/Proyectos/stopwords.txt")) {
+        try (FileReader fr = new FileReader("/Users/Pam/Documents/MCI/Tesis/Proyectos/MCILab/stopwords.txt")) {
             BufferedReader br = new BufferedReader(fr);
             String linea;
             while ((linea = br.readLine()) != null) {
