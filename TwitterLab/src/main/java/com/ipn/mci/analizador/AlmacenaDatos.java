@@ -11,6 +11,7 @@ import com.ipn.mci.analizador.dao.AlamacenaDatosDAO;
 import com.ipn.mci.analizador.dao.CargaDatosDAO;
 import com.ipn.mci.analizador.domain.ConteoAnalisis;
 import com.ipn.mci.analizador.domain.ResultadosAnalisis;
+import com.ipn.mci.analizador.domain.Tweet;
 import com.ipn.mci.analizador.domain.UsuarioTw;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -59,10 +60,13 @@ public class AlmacenaDatos {
             while (conteoIt.hasNext()) {
                 ConteoAnalisis conteo = (ConteoAnalisis) conteoIt.next();
                 conteo.setIdConteoDia(datos.insertaConteo(claveResultados, conteo));
-                //System.out.println("****" + conteo.getTipoConteo() + "|" + conteo.getItem() + "|" + conteo.getConteoItem());
                 for (UsuarioTw usuario : conteo.getListaUsuarios()) {
-                    datos.insertaConteoUsuario(resultados.getUsuarios().get(usuario.getScreenName()), conteo);
+                    //System.out.println(conteo.getItem() + "|" + usuario.getScreenName() + "|" + usuario.getTweetTexto());
+                    int idTweet = datos.insertaMencionadaEn(usuario.getTweetTexto());
+                    datos.insertaConteoUsuario(resultados.getUsuarios().get(usuario.getScreenName()), idTweet, conteo);
                 }
+                
+                
             }
 
         } catch (Exception excp) {
@@ -79,7 +83,7 @@ public class AlmacenaDatos {
 
         try {
 
-            datos.setConexion(conexion.getConexion());            
+            datos.setConexion(conexion.getConexion());
 
             LinkedList usuarios = datos.getUsuarios();
             Iterator usuIt = usuarios.iterator();

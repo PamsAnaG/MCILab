@@ -78,9 +78,10 @@ public class CargaDatosDAO extends Conexion4 {
 
     }
 
-    public void actualizaUsuarioInfo(int idUsuarioTw) throws SQLException {
+    public void actualizaUsuarioInfo(UsuarioTw usuario) throws SQLException {
 
-        sSql = "UPDATE USUARIOS_TW SET INFO_EX = 1 WHERE ID_USUARIO_TW = " + idUsuarioTw;
+        sSql = "UPDATE USUARIOS_TW SET INFO_EX = 1, RETWEETS = " + usuario.getReTweets()
+                + ", LIKES = " + usuario.getLikes() + " WHERE ID_USUARIO_TW = " + usuario.getIdUsuarioTw();
 
         ejecutaUpdate();
 

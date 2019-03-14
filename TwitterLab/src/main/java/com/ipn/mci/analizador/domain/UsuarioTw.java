@@ -3,7 +3,6 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-
 package com.ipn.mci.analizador.domain;
 
 /**
@@ -11,7 +10,21 @@ package com.ipn.mci.analizador.domain;
  * @author pamela.gutierrez
  */
 public class UsuarioTw {
-    
+
+    /**
+     * @return the tweetTexto
+     */
+    public String getTweetTexto() {
+        return tweetTexto;
+    }
+
+    /**
+     * @param tweetTexto the tweetTexto to set
+     */
+    public void setTweetTexto(String tweetTexto) {
+        this.tweetTexto = tweetTexto;
+    }
+
     private int idUsuarioTw;
     private String screenName;
     private String name;
@@ -22,7 +35,12 @@ public class UsuarioTw {
     private int lists;
     private double tffRatio;
     private int preCargado = 0;
-    
+    private int infoEx = 0;
+    private int reTweets = 0;
+    private int replies = 0;
+    private int likes = 0;
+    // PROPIEDAD UTILIZADA UNICAMENTE PARA LA RELACION INICIAL
+    private String tweetTexto;
 
     /**
      * @return the screenName
@@ -163,5 +181,61 @@ public class UsuarioTw {
     public void setPreCargado(int preCargado) {
         this.preCargado = preCargado;
     }
-    
+
+    /**
+     * @return the infoEx
+     */
+    public int getInfoEx() {
+        return infoEx;
+    }
+
+    /**
+     * @param infoEx the infoEx to set
+     */
+    public void setInfoEx(int infoEx) {
+        this.infoEx = infoEx;
+    }
+
+    /**
+     * @return the reTweets
+     */
+    public int getReTweets() {
+        return reTweets;
+    }
+
+    /**
+     * @param reTweets the reTweets to set
+     */
+    public void setReTweets(int reTweets) {
+        this.reTweets = reTweets;
+    }
+
+    /**
+     * @return the replies
+     */
+    public int getReplies() {
+        return replies;
+    }
+
+    /**
+     * @param replies the replies to set
+     */
+    public void setReplies(int replies) {
+        this.replies = replies;
+    }
+
+    /**
+     * @return the likes
+     */
+    public int getLikes() {
+        return likes;
+    }
+
+    /**
+     * @param likes the likes to set
+     */
+    public void setLikes(int likes) {
+        this.likes = likes;
+    }
+
 }

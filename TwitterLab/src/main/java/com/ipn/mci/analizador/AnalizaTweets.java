@@ -10,8 +10,10 @@ import com.google.gson.JsonParser;
 import com.infraestructura.comun.bd.Registro;
 import com.ipn.mci.analizador.dao.CargaDatosDAO;
 import com.ipn.mci.analizador.domain.ConteoAnalisis;
+import com.ipn.mci.analizador.domain.DatosPalabra;
 import com.ipn.mci.analizador.domain.ResultadosAnalisis;
 import com.ipn.mci.analizador.domain.TipoConteo;
+import com.ipn.mci.analizador.domain.Tweet;
 import com.ipn.mci.analizador.domain.UsuarioTw;
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -41,9 +43,12 @@ public class AnalizaTweets {
 
     public void analizaTweets(List<String> tweetsJSON, Date fecha) {
 
+        resultados = null;
+        resultados = new ResultadosAnalisis();
+
         HashMap<String, Integer> palabras = new HashMap();
         HashMap<String, Integer> palabrasLimpias = new HashMap();
-        HashMap<String, List<UsuarioTw>> palabrasLimpiasUsuarios = new HashMap();
+        HashMap<String, List<UsuarioTw>> palabrasLimpiasDatos = new HashMap();
         HashMap<Integer, String> retweets = new HashMap();
         long totalPalabras = 0;
 
@@ -80,6 +85,7 @@ public class AnalizaTweets {
                     usuario.setTweets(usuarioTw.get("statuses_count").getAsInt());
                     usuario.setUserId(usuarioTw.get("id_str").getAsString());
                     usuario.setTffRatio(usuario.getFollowers() / usuario.getFriends());
+                    usuario.setTweetTexto(tweetTexto);
 
                     // ACTUALIZAMOS EL USUARIO SI ES QUE YA ESTA EN LA BASE
                     if (!resultados.getUsuarios().containsKey(usuario.getScreenName())) {
@@ -90,17 +96,17 @@ public class AnalizaTweets {
                     String[] words = tweetTexto.split("\\s");
                     for (String word : words) {
                         totalPalabras++;
+                        word = limpiaPalabra(word);
                         palabras.put(word, ((palabras.containsKey(word)) ? palabras.get(word) + 1 : 1));
                         if (!palabrasVacias.contains(word)) {
                             palabrasLimpias.put(word, ((palabrasLimpias.containsKey(word)) ? palabrasLimpias.get(word) + 1 : 1));
-                            if (palabrasLimpiasUsuarios.containsKey(word)) {
-                                palabrasLimpiasUsuarios.get(word).add(usuario);
+                            if (palabrasLimpiasDatos.containsKey(word)) {
+                                palabrasLimpiasDatos.get(word).add(usuario);
                             } else {
                                 List<UsuarioTw> usuariosL = new ArrayList();
                                 usuariosL.add(usuario);
-                                palabrasLimpiasUsuarios.put(word, usuariosL);
+                                palabrasLimpiasDatos.put(word, usuariosL);
                             }
-
                         }
                     }
                 } catch (Exception excp) {
@@ -150,20 +156,20 @@ public class AnalizaTweets {
                 if (key.startsWith("@") && usuarios <= 10) { // USUARIO
                     usuarios++;
                     conteo.setTipoConteo(TipoConteo.USUARIO);
-                    conteo.setListaUsuarios(palabrasLimpiasUsuarios.get(key));
-                    conteo.setLugar(lugarPalabras++);
+                    conteo.setListaUsuarios(palabrasLimpiasDatos.get(key));
+                    conteo.setLugar(lugarPalabras++);                    
                     resultados.getConteoAnalisis().add(conteo);
                 } else if (key.startsWith("#") && hashtag <= 10) { // HASHTAG
                     hashtag++;
                     conteo.setTipoConteo(TipoConteo.HASHTAG);
-                    conteo.setListaUsuarios(palabrasLimpiasUsuarios.get(key));
-                    conteo.setLugar(lugarHashT++);
+                    conteo.setListaUsuarios(palabrasLimpiasDatos.get(key));
+                    conteo.setLugar(lugarHashT++);                    
                     resultados.getConteoAnalisis().add(conteo);
-                } else if (!key.startsWith("https") && palabrasN <= 10) { // PALABRA
+                } else if (!key.startsWith("https") && palabrasN <= 15) { // PALABRA
                     palabrasN++;
                     conteo.setTipoConteo(TipoConteo.PALABRA);
-                    conteo.setListaUsuarios(palabrasLimpiasUsuarios.get(key));
-                    conteo.setLugar(lugarUsuario++);
+                    conteo.setListaUsuarios(palabrasLimpiasDatos.get(key));
+                    conteo.setLugar(lugarUsuario++);                    
                     resultados.getConteoAnalisis().add(conteo);
                 }
                 if (usuarios == 10 && hashtag == 10 && palabrasN == 10) {
@@ -195,12 +201,20 @@ public class AnalizaTweets {
         }
     }
 
+    private String limpiaPalabra(String palabra) {
+        String paralabraProcesable = "";
+        paralabraProcesable = palabra.replaceAll("á", "a").replaceAll("é", "e").replaceAll("í", "i").replaceAll("ó", "o").replaceAll("ú", "u");
+        // MANEJAMOS TODAS LAS PALABRAS EN MAYUSCULAS
+        return paralabraProcesable.toUpperCase();
+    }
+
     private void cargapalabrasVacias() {
         try (FileReader fr = new FileReader("/Users/Pam/Documents/MCI/Tesis/Proyectos/MCILab/stopwords.txt")) {
             BufferedReader br = new BufferedReader(fr);
             String linea;
             while ((linea = br.readLine()) != null) {
-                palabrasVacias.add(linea);
+                // ESTANDARIZAR A MAYUSCULAS
+                palabrasVacias.add(linea.toUpperCase());
             }
         } catch (Exception excp) {
             excp.printStackTrace();

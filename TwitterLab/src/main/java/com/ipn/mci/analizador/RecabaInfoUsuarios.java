@@ -5,7 +5,10 @@
  */
 package com.ipn.mci.analizador;
 
-import com.infraestructura.comun.bd.Registro;
+import com.google.gson.Gson;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import com.ipn.mci.analizador.dao.CargaDatosDAO;
 import com.ipn.mci.analizador.domain.UsuarioTw;
 import com.ipn.mci.twitterlab.UserTimelineConsumer;
@@ -43,19 +46,15 @@ public class RecabaInfoUsuarios {
             while (usuariosIt.hasNext()) {
                 UsuarioTw usuario = (UsuarioTw) usuariosIt.next();
                 System.out.println("Obteniendo informacion de: " + usuario.getScreenName());
-
                 contadorUsuarios++;
-                //twConsumer.setScreename((String)usuario.getDefCampo("SCREEN_NAME"));
                 twConsumer.setScreename(usuario.getScreenName());
                 String timeLine = twConsumer.consumeTimeLine();
-                fichero = new FileWriter("/Users/Pam/Documents/MCI/Tesis/Proyectos/ArchivosTwitter/Usuarios/" + usuario.getScreenName() + ".json");
-                pw = new PrintWriter(fichero);
-                pw.println(timeLine);
-                datos.actualizaUsuarioInfo(Integer.valueOf(usuario.getIdUsuarioTw()));
-                if (contadorUsuarios == 1) {
+                procesaInfoUsuario(timeLine, usuario);
+                datos.actualizaUsuarioInfo(usuario);
+
+                if (contadorUsuarios == 200) {
                     break;
                 }
-
             }
 
         } catch (Exception excp) {
@@ -73,6 +72,38 @@ public class RecabaInfoUsuarios {
             }
 
         }
+
+    }
+
+    public boolean procesaInfoUsuario(String timeLine, UsuarioTw usuario) {
+
+        try {
+
+            JsonParser parser = new JsonParser();
+            JsonArray timeLineJSON = parser.parse(timeLine).getAsJsonArray();
+            for (int i = 0; i < timeLineJSON.size(); i++) {
+                JsonObject tweet = timeLineJSON.get(i).getAsJsonObject();
+                // Solo contamos los tweets propios del usuario, no los que haya retweeteado y que tienen un reteet count desde origen
+                if (tweet.get("retweeted_status") == null) {
+                    if (tweet != null) {
+                        usuario.setReTweets(usuario.getReTweets() + tweet.get("retweet_count").getAsInt());
+                        usuario.setLikes(usuario.getLikes() + tweet.get("favorite_count").getAsInt());
+                    }
+                }
+            }
+            Gson gson = new Gson();
+            String json = gson.toJson(timeLineJSON);
+
+            FileWriter writer = new FileWriter("/Users/Pam/Documents/MCI/Tesis/Proyectos/ArchivosTwitter/Usuarios/" + usuario.getScreenName() + ".json");
+            writer.write(json);
+            writer.close();
+
+            return true;
+
+        } catch (Exception excp) {
+            System.out.println("Informacion de usuario incorrecta: " + usuario.getScreenName());
+        }
+        return false;
 
     }
 

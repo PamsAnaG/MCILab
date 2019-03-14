@@ -75,17 +75,38 @@ public class AlamacenaDatosDAO extends Conexion4 {
 
     }
 
-    public void insertaConteoUsuario(UsuarioTw usuarioTw, ConteoAnalisis conteo) throws SQLException {
+    public void insertaConteoUsuario(UsuarioTw usuarioTw, int idTweet, ConteoAnalisis conteo) throws SQLException {
 
-        String query = "INSERT INTO USUARIOS_CONTEO (ID_USUARIO_TW, ID_CONTEO_DIA) VALUES\n"
-                + "(?, ?)";        
+        String query = "INSERT INTO USUARIOS_CONTEO (ID_USUARIO_TW, ID_TWEET, ID_CONTEO_DIA) VALUES\n"
+                + "(?, ?, ?)";        
 
         PreparedStatement pSt;
         pSt = this.conn.prepareStatement(query);
         pSt.setInt(1, usuarioTw.getIdUsuarioTw());
-        pSt.setInt(2, conteo.getIdConteoDia());
+        pSt.setInt(2, idTweet);
+        pSt.setInt(3, conteo.getIdConteoDia());
 
         pSt.executeUpdate();
+
+    }
+    
+    public int insertaMencionadaEn(String tweetTexto) throws SQLException {
+
+        String query = "INSERT INTO TWEETS_POPULAR_WRDS (TWEET) VALUES\n"
+                + "(?)";
+
+        PreparedStatement pSt;
+        pSt = this.conn.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
+        pSt.setString(1, tweetTexto);
+        
+        pSt.executeUpdate();
+
+        ResultSet rs = pSt.getGeneratedKeys();
+        if (rs.next()) {
+            return rs.getInt(1);
+        }
+
+        return 0;
 
     }
 

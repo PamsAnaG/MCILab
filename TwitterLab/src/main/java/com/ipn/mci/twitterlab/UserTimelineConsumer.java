@@ -33,9 +33,9 @@ public class UserTimelineConsumer {
                 "p4tqX2mpRppuILzYCmdex5RO08Zug47OtSSTX9raHuFgx",
                 "1otukjBXtwAkNkC0m1UwtovIF",
                 "F2MGdRatio9REWzQR5uisNIPtOW1Mno7S2PV5UeZx3CkabvNoh",
-                "https://api.twitter.com/1.1/statuses/user_timeline.json", "pamaid23");
+                "https://api.twitter.com/1.1/statuses/user_timeline.json", "__GALO");
 
-        consumer.consumeTimeLine();
+        System.out.println(consumer.consumeTimeLine());
     }
 
     public UserTimelineConsumer(String accessToken, String accessSecret, String consumerKey, String consumerSecret, String url, String screenName) {
@@ -57,7 +57,7 @@ public class UserTimelineConsumer {
 
             OAuthConsumer consumer = new CommonsHttpOAuthConsumer(consumerKey, consumerSecret);
             consumer.setTokenWithSecret(accessToken, accessSecret);
-            String url = userTimelineUrl + "?screen_name=" + screenName + "&count=50&trim_user=true&exclude_replies=true";
+            String url = userTimelineUrl + "?screen_name=" + screenName + "&count=50&trim_user=true&exclude_replies=false";
 
             HttpClient client = HttpClientBuilder.create().build();
             HttpGet request = new HttpGet(url);
@@ -67,7 +67,7 @@ public class UserTimelineConsumer {
             //request.addHeader("User-Agent", USER_AGENT);
             HttpResponse response = client.execute(request);
 
-            System.out.println("Response Code : "
+            System.out.println("**Response Code : "
                     + response.getStatusLine().getStatusCode());
 
             BufferedReader rd = new BufferedReader(

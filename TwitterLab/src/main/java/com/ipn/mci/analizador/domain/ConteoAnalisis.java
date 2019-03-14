@@ -20,7 +20,8 @@ public class ConteoAnalisis {
     private Date fhRegistro;
     private String item;
     private int conteoItem;
-    private List<UsuarioTw> listaUsuarios;
+    private List<UsuarioTw> listaUsuarios = new java.util.ArrayList();
+    private List<Tweet> mencionadaEn;
 
     /**
      * @return the tipoConteo
@@ -118,6 +119,20 @@ public class ConteoAnalisis {
      */
     public void setLugar(int lugar) {
         this.lugar = lugar;
+    }
+
+    /**
+     * @return the mencionadaEn
+     */
+    public List<Tweet> getMencionadaEn() {
+        return mencionadaEn;
+    }
+
+    /**
+     * @param mencionadaEn the mencionadaEn to set
+     */
+    public void setMencionadaEn(List<Tweet> mencionadaEn) {
+        this.mencionadaEn = mencionadaEn;
     }
 
 }

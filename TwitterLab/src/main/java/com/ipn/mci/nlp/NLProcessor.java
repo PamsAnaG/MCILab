@@ -26,11 +26,10 @@ import edu.upc.freeling.Tokenizer;
 import edu.upc.freeling.Ukb;
 import edu.upc.freeling.Util;
 import edu.upc.freeling.Word;
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.UnsupportedEncodingException;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  *
@@ -153,6 +152,80 @@ public class NLProcessor {
         }
     }
 
+    public List<ListSentence> getTaggerResults(List<String> tweets) {
+
+        List<ListSentence> resultados = new ArrayList();
+
+        try {
+
+            System.loadLibrary("freeling_javaAPI");
+
+            String FLDIR = System.getenv("FREELINGDIR");
+            if (FLDIR == null) {
+                FLDIR = "/usr/local";
+            }
+
+            File f = new File(FLDIR + "/share/freeling");
+            if (!f.exists()) {
+                System.err.println("Folder " + FLDIR + "/share/freeling not found.");
+                System.err.println("Please set FREELINGDIR environment variable to FreeLing installation directory");
+                System.exit(1);
+            }
+
+            String DATA = FLDIR + "/share/freeling/";
+
+            Util.initLocale("default");
+
+            String LANG = "es";
+            MacoOptions op = new MacoOptions(LANG);
+
+            op.setDataFiles("", DATA + "common/punct.dat", DATA + LANG + "/dicc.src",
+                    DATA + LANG + "/afixos.dat", "", DATA + LANG + "/locucions.dat",
+                    DATA + LANG + "/np.dat", DATA + LANG + "/quantities.dat", DATA + LANG + "/probabilitats.dat");
+
+            Tokenizer tk = new Tokenizer(DATA + LANG + "/tokenizer.dat");
+            Splitter sp = new Splitter(DATA + LANG + "/splitter.dat");
+            SWIGTYPE_p_splitter_status sid = sp.openSession();
+
+            Maco mf = new Maco(op);
+            mf.setActiveOptions(false, true, true, true, true, true, false, true, true, true, true, true);
+
+            HmmTagger tg = new HmmTagger(DATA + LANG + "/tagger.dat", true, 2);
+
+            Nec neclass = new Nec(DATA + LANG + "/nerc/nec/nec-ab-poor1.dat");
+
+            Senses sen = new Senses(DATA + LANG + "/senses.dat");
+            Ukb dis = new Ukb(DATA + LANG + "/ukb.dat");
+
+            ListSentence ls = null;
+            for (String tweet : tweets) {                
+                ListWord l = tk.tokenize(tweet);
+
+                ls = sp.split(l);
+
+                mf.analyze(ls);
+
+                tg.analyze(ls);
+
+                neclass.analyze(ls);
+
+                sen.analyze(ls);
+                dis.analyze(ls);
+
+                resultados.add(ls);
+            }
+
+            sp.closeSession(sid);
+            return resultados;
+        } catch (Exception excp) {
+            excp.printStackTrace();
+
+        }
+
+        return null;
+
+    }
+
     private static void printSenses(Word w) {
         String ss = w.getSensesString();
 
@@ -199,7 +272,7 @@ public class NLProcessor {
 
                     System.out.print(
                             w.getForm() + " " + w.getLemma() + " " + w.getTag());
-                    printSenses(w);
+                    //printSenses(w);
                     System.out.println();
                 }
 
@@ -226,7 +299,7 @@ public class NLProcessor {
             }
             w = tr.begin().getInformation().getWord();
             System.out.print("(" + w.getForm() + " " + w.getLemma() + " " + w.getTag());
-            printSenses(w);
+            //printSenses(w);
             System.out.println(")");
         } else {
             // The node is non-terminal
@@ -273,7 +346,7 @@ public class NLProcessor {
 
         System.out.print(
                 "(" + w.getForm() + " " + w.getLemma() + " " + w.getTag());
-        printSenses(w);
+        //printSenses(w);
         System.out.print(")");
 
         nch = tr.numChildren();
@@ -337,7 +410,7 @@ public class NLProcessor {
 
         NLProcessor processor = new NLProcessor();
         //processor.analizaTexto("Todos nuestros trajes de baño te están esperando, ingresa ya mismo a nuestra web para que veas todo lo hermoso que tenemos para ti.");
-        processor.analizaTexto("Pamela hace la tesis.");
+        processor.analizaTexto("La duración de la bateria del nuevo iPhone es genial");
     }
 
 }
