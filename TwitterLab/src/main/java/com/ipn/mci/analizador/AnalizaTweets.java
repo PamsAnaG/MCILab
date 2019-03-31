@@ -153,13 +153,13 @@ public class AnalizaTweets {
                 conteo.setConteoItem(palabras.get(key));
                 conteo.setFhRegistro(new Date());
                 conteo.setItem(key);
-                if (key.startsWith("@") && usuarios <= 10) { // USUARIO
+                if (key.startsWith("@") && usuarios <= 15) { // USUARIO
                     usuarios++;
                     conteo.setTipoConteo(TipoConteo.USUARIO);
                     conteo.setListaUsuarios(palabrasLimpiasDatos.get(key));
                     conteo.setLugar(lugarPalabras++);                    
                     resultados.getConteoAnalisis().add(conteo);
-                } else if (key.startsWith("#") && hashtag <= 10) { // HASHTAG
+                } else if (key.startsWith("#") && hashtag <= 15) { // HASHTAG
                     hashtag++;
                     conteo.setTipoConteo(TipoConteo.HASHTAG);
                     conteo.setListaUsuarios(palabrasLimpiasDatos.get(key));
@@ -172,7 +172,7 @@ public class AnalizaTweets {
                     conteo.setLugar(lugarUsuario++);                    
                     resultados.getConteoAnalisis().add(conteo);
                 }
-                if (usuarios == 10 && hashtag == 10 && palabrasN == 10) {
+                if (usuarios == 15 && hashtag == 15 && palabrasN == 15) {
                     break;
                 }
             }

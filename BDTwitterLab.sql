@@ -13,6 +13,7 @@ CREATE TABLE ANALISIS_DIA(
     PRIMARY KEY (ID_ANALISIS_DIA)
 );
 
+
 /*
 TIPO_CONTEO:
 	1 - Palabra
@@ -101,29 +102,48 @@ delete from analisis_dia;
 delete from TWEETS_POPULAR_WRDS;
 
 
-select * from analisis_dia;
-select * from conteo_dia;
-select * from usuarios_tw;
+select * from analisis_dia order by `FH_ANALISIS`
+select * from conteo_dia where id_analisis_dia = 194
+select * from usuarios_tw where info_ex = 0
+select * from usuarios_tw where screen_name = 'DrFerNunez'
 select * from TWEETS_POPULAR_WRDS;
 select * from usuarios_conteo;
 select * from ANALISIS_SENTIMIENTO
 
-delete from ANALISIS_SENTIMIENTO
+select sum(`TWEETS_ANALIZADOS`), sum(`PALABRAS_PROMEDIO_TWEETS`)/count(*), 
+sum(`PALABRAS`), sum(`PALABRAS_UNICAS`), sum(`PALABRAS_LIMPIAS`),
+sum(`PALABRAS_LIMPIAS_UNICAS`), sum(`DIVERSIDAD_LEXICA`)/count(*)
+from analisis_dia
+
+
+delete from usuarios_conteo where id_conteo_dia in (select id_conteo_dia from conteo_dia where id_analisis_dia < 211)
+delete from  conteo_dia where id_analisis_dia < 211
+delete from  analisis_dia where id_analisis_dia < 211
+
+
 update analisis_dia set analisis_sentimiento = 0 
+update usuarios_tw set info_ex = 0 where id_usuario_tw >=162777
+
+select ana.fh_analisis, count(*)
+from analisis_dia ana
+join conteo_dia con on (ana.ID_ANALISIS_DIA = con.ID_ANALISIS_DIA)
+group by ana.fh_analisis
 
 
-select ana.`ID_ANALISIS_DIA`, ana.`FH_ANALISIS`, 
+select ana.`ID_ANALISIS_DIA`, ana.`FH_ANALISIS`, con.lugar, 
 case con.TIPO when 0 then 'PALABRA' when 1 then 'USUARIO' when 2 then 'HASHTAG' END TIPO, con.`ITEM`, con.`CONTEO_ITEM`
 from analisis_dia ana
 join conteo_dia con on (ana.ID_ANALISIS_DIA = con.ID_ANALISIS_DIA)
-order by ana.`FH_ANALISIS`, con.TIPO, con.`CONTEO_ITEM` desc
+order by con.conteo_item desc
+
+order by ana.`FH_ANALISIS`, con.TIPO, con.lugar 
 
 select dia.fh_analisis, con.lugar, case con.TIPO when 0 then 'PALABRA' when 1 then 'USUARIO' when 2 then 'HASHTAG' END TIPO, con.`ITEM`, con.`CONTEO_ITEM`, 
 ana.rating_general, ana.rating_generalf, ana.conteo_negativo, ana.conteo_negativoF, ana.conteo_positivo, ana.conteo_positivof
 from ANALISIS_SENTIMIENTO ana
 join CONTEO_DIA con on (con.`ID_CONTEO_DIA` = ana.`ID_CONTEO_DIA`)
 join analisis_dia dia on (dia.id_analisis_dia = con.id_analisis_dia)
-order by dia.fh_analisis, con.lugar
+order by dia.fh_analisis, con.TIPO, con.lugar
 
 
 select con.`ITEM`, dia.fh_analisis, 
@@ -137,6 +157,4 @@ join analisis_dia dia on (dia.id_analisis_dia = con.id_analisis_dia)
 join TWEETS_POPULAR_WRDS tw on (tw.ID_TWEET = usucon.ID_TWEET)
 order by con.`id_conteo_DIA`, dia.fh_analisis, con.TIPO DESC
 
-docker run -d --name sqlserverpam -e 'ACCEPT_EULA=Y' -e 'SA_PASSWORD=Desarrollo23' -p 1433:1433 microsoft/mssql-server-linux
-docker rm sql_server_demo
-docker stop sql_server_demo
+

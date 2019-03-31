@@ -5,7 +5,6 @@
  */
 package com.ipn.mci.analizador;
 
-import com.infraestructura.comun.bd.Registro;
 import com.ipn.mci.analizador.dao.FiltraResultadosDAO;
 import com.ipn.mci.analizador.domain.AnalisisSentimiento;
 import com.ipn.mci.analizador.domain.ConteoAnalisis;
@@ -20,16 +19,12 @@ import edu.upc.freeling.Sentence;
 import edu.upc.freeling.Word;
 import java.io.BufferedReader;
 import java.io.FileInputStream;
-import java.io.FileReader;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Set;
-import java.util.StringTokenizer;
 
 /**
  *
@@ -48,53 +43,61 @@ public class FiltraResultados {
             datos.abreConexion("com.mysql.cj.jdbc.Driver", "jdbc:mysql://127.0.0.1:3306/mcitesis?useUnicode=true&useTimezone=true", "root", "Desarrollo");
 
             cargaAFINNLEXICON();
+            List<TipoConteo> tipoConteo = new ArrayList();
+            tipoConteo.add(TipoConteo.PALABRA);
+            tipoConteo.add(TipoConteo.HASHTAG);
+            tipoConteo.add(TipoConteo.USUARIO);
             List<ConteoAnalisis> conteosEfectivos = new ArrayList();
             LinkedList<ResultadosAnalisis> fechas = datos.getDiasAnalisis();
             Iterator fechasIt = fechas.iterator();
             while (fechasIt.hasNext()) {
                 // PROCESAMOS PRIMERO LAS PALABRAS PARA LA FECHA DE ANALISIS
                 ResultadosAnalisis fechaAnalisis = (ResultadosAnalisis) fechasIt.next();
-                LinkedList<ConteoAnalisis> palabrasAnalisis = datos.getRegistrosDias(fechaAnalisis.getFhAnalisis(), TipoConteo.PALABRA.ordinal());
-                for (ConteoAnalisis conteoAnalisis : palabrasAnalisis) {
-                    // CALCULAMOS EL 20% DE LOS USUARIOS QUE MENCIONARON LA PALABRA
-                    int usuariosEfectivos = 0;
-                    double usuariosPorcentaje = conteoAnalisis.getListaUsuarios().size() * 0.20;
-                    double usuariosPorcentajInteraccion = conteoAnalisis.getListaUsuarios().size() * 0.20;
-                    int usuariosInteraccion = 0;
-                    System.out.println(conteoAnalisis.getItem() + " Usuario " + conteoAnalisis.getListaUsuarios().size());
-                    for (UsuarioTw usuario : conteoAnalisis.getListaUsuarios()) {
-                        if (usuario.getTffRatio() > 1) {
-                            usuariosEfectivos++;
-                        }
-                        // INTERACCION DE AL MENOS 10% DE SU AUDIENCIA EN LOS ULTIMOS 50 TWEETS
-                        double porcentajeAudiencia = usuario.getFollowers() * 0.10;
-                        int interaccionUsuario = usuario.getReTweets() + usuario.getLikes();
-                        if (interaccionUsuario > porcentajeAudiencia) {
-                            usuariosInteraccion++;
-                        }
-                        // VALIDACION DE TFF RATIO
-                        if (usuariosEfectivos > usuariosPorcentaje) {
-                            if (usuariosInteraccion > usuariosPorcentajInteraccion) {
-                                conteosEfectivos.add(conteoAnalisis);
-                                break;
+                for (TipoConteo tipo : tipoConteo) {
+                    System.out.println("Procesando " + tipo.toString());
+                    LinkedList<ConteoAnalisis> palabrasAnalisis = datos.getRegistrosDias(fechaAnalisis.getFhAnalisis(), tipo.ordinal());
+                    for (ConteoAnalisis conteoAnalisis : palabrasAnalisis) {
+                        // CALCULAMOS EL 20% DE LOS USUARIOS QUE MENCIONARON LA PALABRA
+                        int usuariosEfectivos = 0;
+                        double usuariosPorcentaje = conteoAnalisis.getListaUsuarios().size() * 0.20;
+                        double usuariosPorcentajInteraccion = conteoAnalisis.getListaUsuarios().size() * 0.20;
+                        int usuariosInteraccion = 0;
+                        System.out.println(conteoAnalisis.getItem() + " Usuario " + conteoAnalisis.getListaUsuarios().size());
+                        for (UsuarioTw usuario : conteoAnalisis.getListaUsuarios()) {
+                            if (usuario.getTffRatio() > 1) {
+                                usuariosEfectivos++;
+                            }
+                            // INTERACCION DE AL MENOS 10% DE SU AUDIENCIA EN LOS ULTIMOS 50 TWEETS
+                            double porcentajeAudiencia = usuario.getFollowers() * 0.10;
+                            int interaccionUsuario = usuario.getReTweets() + usuario.getLikes();
+                            if (interaccionUsuario > porcentajeAudiencia) {
+                                usuariosInteraccion++;
+                            }
+                            // VALIDACION DE TFF RATIO
+                            if (usuariosEfectivos > usuariosPorcentaje) {
+                                if (usuariosInteraccion > usuariosPorcentajInteraccion) {
+                                    conteosEfectivos.add(conteoAnalisis);
+                                    break;
+                                }
                             }
                         }
                     }
-                }
 
-                System.out.println("---------------------------------------------");
-                for (ConteoAnalisis conteo : conteosEfectivos) {
-                    System.out.println(conteo.getItem() + " Usuario " + conteo.getListaUsuarios().size());
-                }
+                    System.out.println("---------------------------------------------");
+                    for (ConteoAnalisis conteo : conteosEfectivos) {
+                        System.out.println(conteo.getItem() + " Usuario " + conteo.getListaUsuarios().size());
+                    }
 
-                System.out.println("---------------------------------------------");
-                List<AnalisisSentimiento> listaAnalisis = analisisSentimientos(conteosEfectivos);
-                for (AnalisisSentimiento analisis : listaAnalisis) {
-                    datos.insertaResultadoFinal(analisis);
+                    System.out.println("---------------------------------------------");
+                    List<AnalisisSentimiento> listaAnalisis = analisisSentimientos(conteosEfectivos);
+                    for (AnalisisSentimiento analisis : listaAnalisis) {
+                        datos.insertaResultadoFinal(analisis);
+                    }
+                    datos.actualizaUsuarioInfo(fechaAnalisis.getIdResultadosAnalisis());
+                    conteosEfectivos = new ArrayList();
+                    System.out.println("************************************************");
+                    
                 }
-                datos.actualizaUsuarioInfo(fechaAnalisis.getIdResultadosAnalisis());
-                conteosEfectivos = new ArrayList();
-                System.out.println("************************************************");
             }
         } catch (Exception excp) {
             excp.printStackTrace();

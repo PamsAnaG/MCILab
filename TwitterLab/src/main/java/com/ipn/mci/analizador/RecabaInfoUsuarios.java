@@ -52,7 +52,7 @@ public class RecabaInfoUsuarios {
                 procesaInfoUsuario(timeLine, usuario);
                 datos.actualizaUsuarioInfo(usuario);
 
-                if (contadorUsuarios == 200) {
+                if (contadorUsuarios == 450) {
                     break;
                 }
             }

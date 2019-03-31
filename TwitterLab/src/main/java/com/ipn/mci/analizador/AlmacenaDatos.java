@@ -47,12 +47,17 @@ public class AlmacenaDatos {
             int claveResultados = datos.insertaResultados(resultados);
             cargaUsuariosProcesados(datos);
 
-            // INSERTAMOS LA INFORMACION DE LOS USUARIOS            
+            // INSERTAMOS LA INFORMACION DE LOS USUARIOS   
             Set<String> userNames = resultados.getUsuarios().keySet();
             for (String userScreenName : userNames) {
                 if (!usuariosBD.containsKey(userScreenName)) {
                     UsuarioTw usuarioTw = resultados.getUsuarios().get(userScreenName);
-                    usuarioTw.setIdUsuarioTw(datos.insertaUsuario(usuarioTw));
+                    try {
+                        usuarioTw.setIdUsuarioTw(datos.insertaUsuario(usuarioTw));
+                    } catch (Exception excp) {
+                        System.out.println("Usuario previamente registrado.." + userScreenName);
+                        usuarioTw.setIdUsuarioTw(datos.cargaIDUsuario(userScreenName));
+                    }
                 }
             }
 
@@ -65,8 +70,7 @@ public class AlmacenaDatos {
                     int idTweet = datos.insertaMencionadaEn(usuario.getTweetTexto());
                     datos.insertaConteoUsuario(resultados.getUsuarios().get(usuario.getScreenName()), idTweet, conteo);
                 }
-                
-                
+
             }
 
         } catch (Exception excp) {

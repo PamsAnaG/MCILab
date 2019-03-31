@@ -6,6 +6,7 @@
 package com.ipn.mci.analizador.dao;
 
 import com.infraestructura.comun.bd.Conexion4;
+import com.infraestructura.comun.bd.Registro;
 import com.ipn.mci.analizador.domain.ConteoAnalisis;
 import com.ipn.mci.analizador.domain.ResultadosAnalisis;
 import com.ipn.mci.analizador.domain.TipoConteo;
@@ -14,6 +15,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.LinkedList;
 
 /**
  *
@@ -132,6 +134,22 @@ public class AlamacenaDatosDAO extends Conexion4 {
         ResultSet rs = pSt.getGeneratedKeys();
         if (rs.next()) {
             return rs.getInt(1);
+        }
+
+        return 0;
+
+    }
+    
+    public int cargaIDUsuario(String screenName) throws SQLException {
+        LinkedList<UsuarioTw> usuariosR = new LinkedList();
+
+        sSql = "SELECT ID_USUARIO_TW FROM USUARIOS_TW WHERE SCREEN_NAME = '" + screenName + "'";
+
+        ejecutaSql();
+
+        Registro usuario = getConsultaRegistro();
+        if (usuario != null) {
+            return Integer.valueOf((String) usuario.getDefCampo("ID_USUARIO_TW"));
         }
 
         return 0;
