@@ -101,14 +101,21 @@ delete from conteo_dia;
 delete from analisis_dia;
 delete from TWEETS_POPULAR_WRDS;
 
+---------------------------------------------------------------------------------
 
 select * from analisis_dia order by `FH_ANALISIS`
+
+select * from analisis_dia where id_analisis_dia = 273
 select * from conteo_dia where id_analisis_dia = 194
 select * from usuarios_tw where info_ex = 0
 select * from usuarios_tw where screen_name = 'DrFerNunez'
 select * from TWEETS_POPULAR_WRDS;
 select * from usuarios_conteo;
-select * from ANALISIS_SENTIMIENTO
+select * from ANALISIS_SENTIMIENTO where id_ana_sent = 23 
+
+select * from analisis_dia where id_analisis_dia = 273
+
+delete from ANALISIS_SENTIMIENTO where id_ana_sent = 212
 
 select sum(`TWEETS_ANALIZADOS`), sum(`PALABRAS_PROMEDIO_TWEETS`)/count(*), 
 sum(`PALABRAS`), sum(`PALABRAS_UNICAS`), sum(`PALABRAS_LIMPIAS`),
@@ -134,12 +141,48 @@ select ana.`ID_ANALISIS_DIA`, ana.`FH_ANALISIS`, con.lugar,
 case con.TIPO when 0 then 'PALABRA' when 1 then 'USUARIO' when 2 then 'HASHTAG' END TIPO, con.`ITEM`, con.`CONTEO_ITEM`
 from analisis_dia ana
 join conteo_dia con on (ana.ID_ANALISIS_DIA = con.ID_ANALISIS_DIA)
-order by con.conteo_item desc
+order by ana.`FH_ANALISIS`, con.TIPO, con.lugar, con.TIPO
 
-order by ana.`FH_ANALISIS`, con.TIPO, con.lugar 
+select con.`id_conteo_DIA`, con.`ITEM`, dia.fh_analisis, con.LUGAR,  
+case con.TIPO when 0 then 'PALABRA' when 1 then 'USUARIO' when 2 then 'HASHTAG' END TIPO, 
+con.`CONTEO_ITEM`, usu.`SCREEN_NAME`, tw.tweet, usu.`FOLLOWERS`, usu.`FRIENDS`, usu.`TWEETS`, usu.`TFF_RATIO`, 
+usu.RETWEETS, usu.LIKES, usu.LISTS
+from USUARIOS_CONTEO usucon
+join CONTEO_DIA con on (usucon.`ID_CONTEO_DIA` = con.`ID_CONTEO_DIA`)
+join USUARIOS_TW usu on (usucon.`ID_USUARIO_TW` = usu.`ID_USUARIO_TW`)
+join analisis_dia dia on (dia.id_analisis_dia = con.id_analisis_dia)
+join TWEETS_POPULAR_WRDS tw on (tw.ID_TWEET = usucon.ID_TWEET)
+where dia.id_analisis_dia = 280
+and con.TIPO = 0
+and con.`ITEM` = 'VIDA'
+order by con.`id_conteo_DIA`, dia.fh_analisis, con.TIPO DESC
 
-select dia.fh_analisis, con.lugar, case con.TIPO when 0 then 'PALABRA' when 1 then 'USUARIO' when 2 then 'HASHTAG' END TIPO, con.`ITEM`, con.`CONTEO_ITEM`, 
+
+select sum(usu.`TFF_RATIO`), sum(usu.`FOLLOWERS`), sum(usu.LIKES), 
+sum(usu.RETWEETS)
+from USUARIOS_CONTEO usucon
+join CONTEO_DIA con on (usucon.`ID_CONTEO_DIA` = con.`ID_CONTEO_DIA`)
+join USUARIOS_TW usu on (usucon.`ID_USUARIO_TW` = usu.`ID_USUARIO_TW`)
+join analisis_dia dia on (dia.id_analisis_dia = con.id_analisis_dia)
+join TWEETS_POPULAR_WRDS tw on (tw.ID_TWEET = usucon.ID_TWEET)
+where dia.id_analisis_dia = 280
+and con.TIPO = 0
+and con.`ITEM` = 'DIAS'
+order by con.`id_conteo_DIA`, dia.fh_analisis, con.TIPO DESC
+
+
+select ana.id_ana_sent, dia.fh_analisis, con.lugar, case con.TIPO when 0 then 'PALABRA' when 1 then 'USUARIO' when 2 then 'HASHTAG' END TIPO, con.`ITEM`, con.`CONTEO_ITEM`, 
 ana.rating_general, ana.rating_generalf, ana.conteo_negativo, ana.conteo_negativoF, ana.conteo_positivo, ana.conteo_positivof
+from ANALISIS_SENTIMIENTO ana
+join CONTEO_DIA con on (con.`ID_CONTEO_DIA` = ana.`ID_CONTEO_DIA`)
+join analisis_dia dia on (dia.id_analisis_dia = con.id_analisis_dia)
+order by dia.fh_analisis, con.TIPO, con.lugar
+
+select ana.id_ana_sent, dia.fh_analisis, con.lugar, case con.TIPO when 0 then 'PALABRA' when 1 then 'USUARIO' when 2 then 'HASHTAG' END TIPO, con.`ITEM`, con.`CONTEO_ITEM`, 
+case when ana.rating_general <= 0 then 'NEGATIVO' when ana.rating_general > 0 then 'POSITIVO' END RATING_GENERAL, 
+case when ana.rating_generalf <= 0 then 'NEGATIVO' when ana.rating_generalf > 0 then 'POSITIVO' END RATING_GENERAL_F, 
+ana.conteo_negativo, 
+ana.conteo_negativoF, ana.conteo_positivo, ana.conteo_positivof
 from ANALISIS_SENTIMIENTO ana
 join CONTEO_DIA con on (con.`ID_CONTEO_DIA` = ana.`ID_CONTEO_DIA`)
 join analisis_dia dia on (dia.id_analisis_dia = con.id_analisis_dia)

@@ -54,8 +54,8 @@ public class FiltraResultados {
                 // PROCESAMOS PRIMERO LAS PALABRAS PARA LA FECHA DE ANALISIS
                 ResultadosAnalisis fechaAnalisis = (ResultadosAnalisis) fechasIt.next();
                 for (TipoConteo tipo : tipoConteo) {
-                    System.out.println("Procesando " + tipo.toString());
-                    LinkedList<ConteoAnalisis> palabrasAnalisis = datos.getRegistrosDias(fechaAnalisis.getFhAnalisis(), tipo.ordinal());
+                    System.out.println("Procesando " + tipo.toString() + "|" + fechaAnalisis.getFhAnalisis());
+                    LinkedList<ConteoAnalisis> palabrasAnalisis = datos.getRegistrosDias(fechaAnalisis.getIdResultadosAnalisis(), tipo.ordinal());
                     for (ConteoAnalisis conteoAnalisis : palabrasAnalisis) {
                         // CALCULAMOS EL 20% DE LOS USUARIOS QUE MENCIONARON LA PALABRA
                         int usuariosEfectivos = 0;
@@ -96,7 +96,7 @@ public class FiltraResultados {
                     datos.actualizaUsuarioInfo(fechaAnalisis.getIdResultadosAnalisis());
                     conteosEfectivos = new ArrayList();
                     System.out.println("************************************************");
-                    
+
                 }
             }
         } catch (Exception excp) {
@@ -115,13 +115,16 @@ public class FiltraResultados {
             for (UsuarioTw usuario : conteo.getListaUsuarios()) {
                 tweets.add(usuario.getTweetTexto());
                 String[] words = usuario.getTweetTexto().split("\\s");
+                //System.out.println("Analizando " + usuario.getTweetTexto());
                 for (String word : words) {
                     if (afinnLexicon.containsKey(limpiaPalabra(word))) {
                         analisis.setRatingGeneral(analisis.getRatingGeneral() + afinnLexicon.get(limpiaPalabra(word)));
                         if (afinnLexicon.get(limpiaPalabra(word)) < 0) {
                             analisis.setConteoNegativo(analisis.getConteoNegativo() + 1);
+                            //System.out.println("Palabra negativa encontrada " + word);
                         } else {
                             analisis.setConteoPositivo(analisis.getConteoPositivo() + 1);
+                            //System.out.println("Palabra positiva encontrada " + word);
                         }
                     }
                 }
@@ -139,7 +142,6 @@ public class FiltraResultados {
     }
 
     private AnalisisSentimiento analisisSentimientosF(List<String> tweets) {
-        System.out.println("***Tweets " + tweets.size());
 
         NLProcessor nlProcessor = new NLProcessor();
         AnalisisSentimiento analisis = new AnalisisSentimiento();
@@ -150,13 +152,13 @@ public class FiltraResultados {
 
             ListSentenceIterator sIt = new ListSentenceIterator(sentencesList);
             while (sIt.hasNext()) {
-                Sentence s = sIt.next();
+                Sentence s = sIt.next();                
                 ListWordIterator wIt = new ListWordIterator(s);
                 while (wIt.hasNext()) {
                     Word word = wIt.next();
                     // BUSCAMOS EL ADJETIVO Y EL ADVERBIO DE LA ORACION
                     if (word.getTag().charAt(0) == 'A' || word.getTag().charAt(0) == 'R') {
-                        // BUSCAMOS EL LEMMA DENTRO DEL DICCIONARIO 
+                        // BUSCAMOS EL LEMMA DENTRO DEL DICCIONARIO                         
                         if (afinnLexicon.containsKey(limpiaPalabra(word.getLemma()))) {
                             analisis.setRatingGeneralF(analisis.getRatingGeneralF() + afinnLexicon.get(limpiaPalabra(word.getLemma())));
                             if (afinnLexicon.get(limpiaPalabra(word.getLemma())) < 0) {

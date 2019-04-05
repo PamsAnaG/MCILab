@@ -410,7 +410,7 @@ public class NLProcessor {
 
         NLProcessor processor = new NLProcessor();
         //processor.analizaTexto("Todos nuestros trajes de baño te están esperando, ingresa ya mismo a nuestra web para que veas todo lo hermoso que tenemos para ti.");
-        processor.analizaTexto("La duración de la bateria del nuevo iPhone es genial");
+        processor.analizaTexto("Buenos dias amigos de twitta Yo gibran soy un poco introvertido hasta cierto punto a veces timido Sin embargo en confianza y con buena vibra se activa mi mod extrovertido ¿sere el unico loco o hay algun esposo que pase por lo mismo Saludos y buen fin de semana");
     }
 
 }

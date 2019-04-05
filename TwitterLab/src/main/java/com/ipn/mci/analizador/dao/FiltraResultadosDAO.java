@@ -48,7 +48,7 @@ public class FiltraResultadosDAO extends Conexion4 {
         return fechas;
     }
 
-    public LinkedList<ConteoAnalisis> getRegistrosDias(Date fechaAnalisis, int tipoRegistro) throws SQLException {
+    public LinkedList<ConteoAnalisis> getRegistrosDias(int idAnalisisDia, int tipoRegistro) throws SQLException {
 
         LinkedList<ConteoAnalisis> conteoR = new LinkedList();
         SimpleDateFormat formatoFecha = new SimpleDateFormat("yyyy-MM-dd");
@@ -62,8 +62,8 @@ public class FiltraResultadosDAO extends Conexion4 {
                 + "join USUARIOS_TW usu on (usucon.`ID_USUARIO_TW` = usu.`ID_USUARIO_TW`)\n"
                 + "join analisis_dia dia on (dia.id_analisis_dia = con.id_analisis_dia)\n"
                 + "join TWEETS_POPULAR_WRDS tw on (tw.ID_TWEET = usucon.ID_TWEET)\n"
-                + "where DATE(dia.fh_analisis) = '" + formatoFecha.format(fechaAnalisis) + "'\n"
-                + "and con.TIPO = " + tipoRegistro + "\n"        
+                + "where dia.id_analisis_dia = " + idAnalisisDia + "\n"
+                + "and con.TIPO = " + tipoRegistro + "\n"
                 + "order by con.`id_conteo_DIA`, dia.fh_analisis, con.TIPO DESC";
 
         ejecutaSql();
